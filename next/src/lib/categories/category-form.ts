@@ -45,6 +45,10 @@ export function flattenCategoryTree(nodes: CategoryNode[]): CategoryNode[] {
   return out;
 }
 
+/**
+ * Angular `CategoryFormComponent.getChildren`: skip the current category
+ * and do not walk its descendants, so they cannot be chosen as parent.
+ */
 export function parentOptions(
   nodes: CategoryNode[],
   excludeId?: number,
@@ -53,17 +57,31 @@ export function parentOptions(
     ...nodes,
     { id: 0, code: "root", children: [] },
   ];
-  return flattenCategoryTree(withRoot)
-    .filter((node) => node.id !== excludeId)
-    .sort((a, b) => {
-      if (a.code < b.code) {
-        return -1;
+  const walk = (list: CategoryNode[]): CategoryNode[] => {
+    const out: CategoryNode[] = [];
+    for (const node of list) {
+      if (excludeId != null && node.id === excludeId) {
+        continue;
       }
-      if (a.code > b.code) {
-        return 1;
+      out.push({
+        ...node,
+        name: node.description?.name ?? node.name ?? "",
+      });
+      if (node.children?.length) {
+        out.push(...walk(node.children));
       }
-      return 0;
-    });
+    }
+    return out;
+  };
+  return walk(withRoot).sort((a, b) => {
+    if (a.code < b.code) {
+      return -1;
+    }
+    if (a.code > b.code) {
+      return 1;
+    }
+    return 0;
+  });
 }
 
 export function formFromCategory(
@@ -239,12 +257,26 @@ export function findNode(
   return null;
 }
 
+export function canMoveCategory(
+  nodes: CategoryNode[],
+  childId: number,
+  parentId: number,
+): boolean {
+  if (!Number.isFinite(childId) || childId === parentId) {
+    return false;
+  }
+  if (parentId !== -1 && parentId !== 0 && isDescendant(nodes, childId, parentId)) {
+    return false;
+  }
+  return !!findNode(nodes, childId);
+}
+
 export function moveCategoryNode(
   nodes: CategoryNode[],
   childId: number,
   parentId: number,
 ): CategoryNode[] {
-  if (childId === parentId || isDescendant(nodes, childId, parentId)) {
+  if (!canMoveCategory(nodes, childId, parentId)) {
     return nodes;
   }
   const { node, rest } = takeNode(nodes, childId);

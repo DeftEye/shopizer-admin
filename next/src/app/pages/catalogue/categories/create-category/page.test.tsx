@@ -1,9 +1,18 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { I18nProvider } from "@/components/i18n-provider";
+import { I18nProvider, useI18n } from "@/components/i18n-provider";
 
 import CreateCategoryPage from "./page";
+
+function LangSwitch() {
+  const { setLang } = useI18n();
+  return (
+    <button type="button" onClick={() => setLang("fr")}>
+      switch-lang
+    </button>
+  );
+}
 
 const push = vi.fn();
 
@@ -54,7 +63,8 @@ function mockFetch() {
 
 function renderCreate() {
   return render(
-    <I18nProvider defaultLang="en" langs={["en"]}>
+    <I18nProvider defaultLang="en" langs={["en", "fr"]}>
+      <LangSwitch />
       <CreateCategoryPage />
     </I18nProvider>,
   );
@@ -130,5 +140,34 @@ describe("create category", () => {
     expect(body.store).toBe("DEFAULT");
     expect(body.descriptions[0].name).toBe("Hats");
     expect(body.descriptions[0].friendlyUrl).toBe("hats");
+  });
+
+  it("keeps in-progress fields when the header language changes", async () => {
+    renderCreate();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Name/)).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByLabelText(/Code/), {
+      target: { value: "hats" },
+    });
+    fireEvent.change(screen.getByLabelText(/Name/), {
+      target: { value: "Hats" },
+    });
+
+    const fetchesBefore = (fetch as unknown as ReturnType<typeof vi.fn>).mock
+      .calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "switch-lang" }));
+
+    expect(
+      (document.getElementById("category-code") as HTMLInputElement).value,
+    ).toBe("hats");
+    expect(
+      (document.getElementById("category-name") as HTMLInputElement).value,
+    ).toBe("Hats");
+    expect(
+      (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.length,
+    ).toBe(fetchesBefore);
   });
 });

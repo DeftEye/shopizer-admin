@@ -106,4 +106,32 @@ describe("categories hierarchy", () => {
     expect((move?.[1] as RequestInit).method).toBe("PUT");
     expect(child).toBeTruthy();
   });
+
+  it("does not PUT a cycle when an ancestor is dropped onto a descendant", async () => {
+    render(
+      <I18nProvider defaultLang="en" langs={["en"]}>
+        <CategoriesHierarchyPage />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Child")).toBeTruthy();
+    });
+
+    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+    fetchMock.mockClear();
+
+    fireEvent.drop(screen.getByText("Child"), {
+      dataTransfer: {
+        getData: () => "4",
+      },
+    });
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some((call) => String(call[0]).includes("/move/")),
+      ).toBe(false);
+      expect(screen.queryByText("Hierarchy successfully updated")).toBeNull();
+    });
+  });
 });

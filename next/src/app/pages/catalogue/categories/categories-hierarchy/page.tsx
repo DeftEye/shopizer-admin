@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/categories";
 import { getLang, getMerchant } from "@/lib/auth/session";
 import {
+  canMoveCategory,
   decorateHierarchy,
   moveCategoryNode,
 } from "@/lib/categories/category-form";
@@ -101,6 +102,9 @@ export default function CategoriesHierarchyPage() {
   }, [fetchTree, lang]);
 
   async function onMove(childId: number, parentId: number) {
+    if (!canMoveCategory(nodes, childId, parentId)) {
+      return;
+    }
     const previous = nodes;
     setNodes(moveCategoryNode(nodes, childId, parentId));
     try {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildCategoryPayload,
+  canMoveCategory,
   decorateHierarchy,
   flattenCategoryTree,
   formFromCategory,
@@ -58,9 +59,12 @@ describe("category form helpers", () => {
     expect(rows[0].name).toBe("Root cat");
   });
 
-  it("builds a parent picker with root and excludes the current category", () => {
-    const options = parentOptions(tree, 1);
-    expect(options.map((item) => item.code)).toEqual(["child", "root"]);
+  it("excludes the current category and its descendants from the parent picker", () => {
+    expect(parentOptions(tree, 1).map((item) => item.code)).toEqual(["root"]);
+    expect(parentOptions(tree, 2).map((item) => item.code)).toEqual([
+      "root",
+      "rootcat",
+    ]);
   });
 
   it("fills empty language fields from the first complete description", () => {
@@ -176,6 +180,7 @@ describe("category form helpers", () => {
     const decorated = decorateHierarchy(tree);
     const moved = moveCategoryNode(decorated, 2, -1);
     expect(moved.map((node) => node.id)).toEqual([1, 2]);
+    expect(canMoveCategory(decorated, 1, 2)).toBe(false);
     expect(moveCategoryNode(decorated, 1, 2)).toEqual(decorated);
   });
 });

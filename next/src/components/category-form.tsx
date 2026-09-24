@@ -105,7 +105,10 @@ export function CategoryForm({ category }: { category: Partial<CategoryDetail> }
     return () => {
       cancelled = true;
     };
-  }, [category, category.id, t]);
+    // Reload only when the edited id changes. `t` / a new `{}` on create
+    // must not wipe in-progress fields.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- category.id
+  }, [category.id]);
 
   const current = useMemo(
     () =>
