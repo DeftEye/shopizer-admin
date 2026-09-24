@@ -75,3 +75,47 @@ export type RoleFlags = {
   isCustomer: boolean;
   isAdminRetail: boolean;
 };
+
+export type UniqueResponse = {
+  exists: boolean;
+};
+
+export type SecurityGroup = {
+  id: number;
+  name: string;
+  type?: string;
+};
+
+export type StoreName = {
+  id?: number;
+  code: string;
+  name?: string;
+};
+
+export type UserListItem = UserProfile & {
+  name?: string;
+};
+
+export type UserListResponse = {
+  data: UserListItem[];
+  recordsTotal: number;
+  totalPages: number;
+};
+
+export type UserPasswordPayload = {
+  password: string;
+  changePassword: string;
+};
+
+export type UserWritePayload = {
+  firstName: string;
+  lastName: string;
+  store: string;
+  userName: string;
+  emailAddress: string;
+  password: string;
+  repeatPassword: string;
+  active: boolean;
+  defaultLanguage: string;
+  groups: UserGroup[];
+};
