@@ -6,6 +6,13 @@
 # dependencies
 /node_modules
 
+# Next.js spike (sibling app; Angular src/ is unchanged)
+/next-admin/node_modules
+/next-admin/.next
+/next-admin/out
+/next-admin/.env
+/next-admin/.env.local
+
 # IDEs and editors
 /.idea
 .project

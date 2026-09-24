@@ -1,5 +1,8 @@
 # Shopizer Administration (shopizer-admin) Angular web app
 
+Incremental Next.js spike of the Angular `#/auth` login lives in
+[`next-admin/`](./next-admin). The Angular app in `src/` is unchanged.
+
 ## Tested with node v12.22.7
 
 Requires Angular cli installed (npm install -g @angular/cli@13.3.x)
