@@ -8,6 +8,22 @@ import { useRouter } from "next/navigation";
 
 const PAGE_SIZE = 20;
 
+type OrderFilters = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  status: string;
+};
+
+const EMPTY_FILTERS: OrderFilters = {
+  id: "",
+  name: "",
+  phone: "",
+  email: "",
+  status: "",
+};
+
 function customerName(order: Order) {
   const first = order.billing?.firstName ?? "";
   const last = order.billing?.lastName ?? "";
@@ -26,19 +42,10 @@ export function OrdersTable() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
+  const [applied, setApplied] = useState<OrderFilters>(EMPTY_FILTERS);
 
   const load = useCallback(
-    async (
-      nextPage: number,
-      filters?: {
-        id: string;
-        name: string;
-        phone: string;
-        email: string;
-        status: string;
-      },
-    ) => {
-      const applied = filters ?? { id, name, phone, email, status };
+    async (nextPage: number, filters: OrderFilters) => {
       setLoading(true);
       setError("");
       try {
@@ -47,11 +54,12 @@ export function OrdersTable() {
           lang: getLanguage(),
           count: PAGE_SIZE,
           page: nextPage,
-          ...applied,
+          ...filters,
         });
         setOrders(data.orders ?? []);
         setTotal(data.recordsTotal ?? data.orders?.length ?? 0);
         setPage(nextPage);
+        setApplied(filters);
       } catch (err) {
         if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
           clearSession();
@@ -69,14 +77,12 @@ export function OrdersTable() {
         setLoading(false);
       }
     },
-    [email, id, name, phone, router, status],
+    [router],
   );
 
   useEffect(() => {
-    void load(1, { id: "", name: "", phone: "", email: "", status: "" });
-    // Initial fetch only; filters apply on submit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void load(1, EMPTY_FILTERS);
+  }, [load]);
 
   function onFilter(event: FormEvent) {
     event.preventDefault();
@@ -177,7 +183,7 @@ export function OrdersTable() {
             className="btn"
             type="button"
             disabled={loading || page <= 1}
-            onClick={() => void load(page - 1)}
+            onClick={() => void load(page - 1, applied)}
           >
             Previous
           </button>{" "}
@@ -185,7 +191,7 @@ export function OrdersTable() {
             className="btn"
             type="button"
             disabled={loading || page >= lastPage}
-            onClick={() => void load(page + 1)}
+            onClick={() => void load(page + 1, applied)}
           >
             Next
           </button>
