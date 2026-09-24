@@ -69,7 +69,21 @@ export function ImageUploading({
 
   return (
     <div className={styles.uploader}>
-      <div className={styles.dropzone}>
+      <div
+        className={styles.dropzone}
+        data-testid="image-dropzone"
+        onDragOver={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          Array.from(event.dataTransfer.files).forEach((file) => {
+            void upload(file);
+          });
+        }}
+      >
         <div>{t("COMMON.DRAG_DROP")}</div>
         <div>{t("COMMON.OR")}</div>
         <button

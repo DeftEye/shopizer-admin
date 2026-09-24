@@ -57,6 +57,22 @@ describe("product images", () => {
       expect(screen.getByAltText("img.png")).toBeTruthy();
     });
 
+    fireEvent.drop(screen.getByTestId("image-dropzone"), {
+      dataTransfer: {
+        files: [new File(["x"], "added.png", { type: "image/png" })],
+      },
+    });
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(
+          (call) =>
+            String(call[0]).includes("/v1/private/product/12/images") &&
+            (call[1] as RequestInit).method === "POST",
+        ),
+      ).toBe(true);
+    });
+
     fireEvent.click(screen.getByRole("button", { name: "Remove" }));
 
     await waitFor(() => {

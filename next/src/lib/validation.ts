@@ -15,9 +15,18 @@ export function formatMoney(value: string | number): string {
   }).format(amount);
 }
 
+const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
+
+/** Calendar date only — do not parse `YYYY-MM-DD` as UTC midnight. */
 export function formatIsoDate(value: string | Date | undefined | null): string {
   if (!value) {
     return "";
+  }
+  if (typeof value === "string") {
+    const match = DATE_ONLY.exec(value);
+    if (match) {
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }
   }
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) {

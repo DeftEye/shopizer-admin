@@ -12,13 +12,17 @@ import { InventoryForm } from "../../../_components/inventory-form";
 
 export default function InventoryDetailsPage() {
   const params = useParams<{ productId: string; inventoryId: string }>();
-  const [inventory, setInventory] = useState<InventoryItem>({});
+  const [inventory, setInventory] = useState<InventoryItem | null>(null);
 
   useEffect(() => {
     void getInventoryById(params.productId, params.inventoryId).then((res) =>
       setInventory({ ...res }),
     );
   }, [params.inventoryId, params.productId]);
+
+  if (!inventory?.id) {
+    return <p>…</p>;
+  }
 
   return (
     <InventoryForm

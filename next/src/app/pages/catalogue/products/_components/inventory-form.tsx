@@ -34,7 +34,7 @@ type InventoryFormState = {
 };
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return formatIsoDate(new Date());
 }
 
 function emptyForm(): InventoryFormState {
@@ -111,8 +111,13 @@ export function InventoryForm({
       productId,
     };
 
-    if (saved.id) {
-      await updateInventory(productId, saved.id, { ...inventoryObj, id: saved.id });
+    const inventoryId = inventory.id ?? saved.id;
+    if (inventoryId) {
+      await updateInventory(productId, inventoryId, {
+        ...inventoryObj,
+        id: inventoryId,
+      });
+      setSaved({ ...saved, ...inventory, id: inventoryId });
       setMessage(t("INVENTORY.INVENTORY_UPDATED"));
     } else {
       const created = await createInventory(inventoryObj);
@@ -175,12 +180,17 @@ export function InventoryForm({
               ) : null}
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>{t("PRODUCT.DATE_AVAILABLE")}</label>
+              <label className={styles.label} htmlFor="dateAvailable">
+                {t("PRODUCT.DATE_AVAILABLE")}
+              </label>
               <input
+                id="dateAvailable"
                 type="date"
                 className={styles.input}
-                readOnly
                 value={form.dateAvailable}
+                onChange={(event) =>
+                  setForm({ ...form, dateAvailable: event.target.value })
+                }
               />
             </div>
             <div className={styles.field}>
@@ -308,21 +318,31 @@ export function InventoryForm({
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Start Date</label>
+                <label className={styles.label} htmlFor="startDate">
+                  Start Date
+                </label>
                 <input
+                  id="startDate"
                   type="date"
                   className={styles.input}
-                  readOnly
                   value={form.startDate}
+                  onChange={(event) =>
+                    setForm({ ...form, startDate: event.target.value })
+                  }
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>End Date</label>
+                <label className={styles.label} htmlFor="endDate">
+                  End Date
+                </label>
                 <input
+                  id="endDate"
                   type="date"
                   className={styles.input}
-                  readOnly
                   value={form.endDate}
+                  onChange={(event) =>
+                    setForm({ ...form, endDate: event.target.value })
+                  }
                 />
               </div>
             </div>
