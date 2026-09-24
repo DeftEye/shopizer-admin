@@ -32,3 +32,15 @@ docker run \
 Username: admin@shopizer.com
 
 Password: password
+
+## Next.js incremental spike
+
+A sibling Next.js app lives in `apps/next-admin`. It reimplements login and the orders list only. The Angular app above is still the production admin.
+
+```bash
+cd apps/next-admin
+npm install
+npm run dev
+```
+
+See `apps/next-admin/README.md`.
