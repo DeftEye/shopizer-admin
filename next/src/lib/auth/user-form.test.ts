@@ -130,6 +130,33 @@ describe("user form rules", () => {
     expect(errors.groups).toBe("required");
   });
 
+  it("rejects an edit password when the repeat field is empty or different", () => {
+    const base = {
+      firstName: "Pat",
+      lastName: "Lee",
+      emailAddress: "pat@shopizer.com",
+      defaultLanguage: "en",
+      groups: [{ id: 2, name: "ADMIN", checked: true, disabled: false }],
+      requirePassword: false,
+      showPassword: true,
+    };
+    expect(
+      validateUserForm({ ...base, password: "Passw0rd", repeatPassword: "" })
+        .repeatPassword,
+    ).toBe("notSame");
+    expect(
+      validateUserForm({ ...base, password: "Passw0rd", repeatPassword: "Other1" })
+        .repeatPassword,
+    ).toBe("notSame");
+    expect(
+      validateUserForm({ ...base, password: "Passw0rd", repeatPassword: "Passw0rd" })
+        .repeatPassword,
+    ).toBeUndefined();
+    expect(
+      validateUserForm({ ...base, password: "", repeatPassword: "" }).repeatPassword,
+    ).toBeUndefined();
+  });
+
   it("only superadmin is prompted for an empty store (Angular isRetailerAdmin is unset)", () => {
     expect(storeRequiredOnSave({ ...EMPTY_ROLE_FLAGS, isSuperadmin: true }, "")).toBe(
       true,

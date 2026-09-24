@@ -398,10 +398,10 @@ export function UserForm({
               }}
               placeholder={t("USER_FORM.EMAIL_ADDRESS")}
             />
-            {touched.emailAddress && errors.emailAddress === "invalid" ? (
+            {touched.emailAddress && errors.emailAddress === "required" ? (
               <span className={styles.err}>{t("USER_FORM.EMAIL_ADDRESS_ERROR_REQUIRED")}</span>
             ) : null}
-            {touched.emailAddress && errors.emailAddress === "required" ? (
+            {touched.emailAddress && errors.emailAddress === "invalid" ? (
               <span className={styles.err}>{t("USER_FORM.EMAIL_ADDRESS_ERROR_NOT_VALID")}</span>
             ) : null}
             {!emailUnique ? (

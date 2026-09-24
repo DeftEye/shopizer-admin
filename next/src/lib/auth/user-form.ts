@@ -253,11 +253,9 @@ export function validateUserForm(opts: {
     }
     if (opts.requirePassword && !opts.repeatPassword) {
       errors.repeatPassword = "required";
-    } else if (
-      opts.password &&
-      opts.repeatPassword &&
-      !passwordsMatch(opts.password, opts.repeatPassword)
-    ) {
+    } else if (!passwordsMatch(opts.password, opts.repeatPassword)) {
+      // Angular checkPasswords: any mismatch, including edit with
+      // password set and an empty repeat, is { notSame: true }.
       errors.repeatPassword = "notSame";
     }
   }
