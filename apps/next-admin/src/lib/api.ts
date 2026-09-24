@@ -26,7 +26,7 @@ export class ApiError extends Error {
 async function request<T>(
   path: string,
   init: RequestInit = {},
-  opts: { auth?: boolean } = { auth: true },
+  opts: { auth?: boolean; token?: string } = { auth: true },
 ): Promise<T> {
   const headers = new Headers(init.headers);
   if (!headers.has("Accept")) {
@@ -36,7 +36,7 @@ async function request<T>(
     headers.set("Content-Type", "application/json");
   }
   if (opts.auth !== false) {
-    const token = getToken();
+    const token = opts.token ?? getToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -70,8 +70,8 @@ export function login(username: string, password: string) {
   );
 }
 
-export function getProfile() {
-  return request<UserProfile>("/v1/private/user/profile");
+export function getProfile(token?: string) {
+  return request<UserProfile>("/v1/private/user/profile", {}, { token });
 }
 
 export type OrderListQuery = {

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { login, getProfile, ApiError } from "@/lib/api";
 import {
+  clearSession,
   persistSession,
   rememberUsername,
   rememberedUsername,
@@ -35,12 +36,19 @@ export function LoginForm() {
     setLoading(true);
     try {
       const session = await login(username.trim(), password);
-      persistSession({
-        token: session.token,
-        userId: session.id,
-        roles: rolesFromGroups([]),
-      });
-      const profile = await getProfile();
+      let profile;
+      try {
+        profile = await getProfile(session.token);
+      } catch (err) {
+        clearSession();
+        const status = err instanceof ApiError ? err.status : 0;
+        setError(
+          status === 0
+            ? "Cannot reach the Shopizer API. Is it running, and is SHOPIZER_API_URL correct?"
+            : "Signed in, but the user profile could not be loaded.",
+        );
+        return;
+      }
       persistSession({
         token: session.token,
         userId: session.id,
@@ -51,6 +59,7 @@ export function LoginForm() {
       rememberUsername(username.trim(), remember);
       router.replace("/orders");
     } catch (err) {
+      clearSession();
       const status = err instanceof ApiError ? err.status : 0;
       setError(
         status === 0
