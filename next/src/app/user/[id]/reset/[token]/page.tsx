@@ -26,7 +26,6 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     client
       .get(`/v1/user/DEFAULT/reset/${token}`)
       .then(() => {

@@ -1,12 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { client } from "@/lib/api/client";
 import type { UserProfile } from "@/lib/api/types";
-import { logoutSession } from "@/lib/auth/session";
+import { getLang, logoutSession } from "@/lib/auth/session";
 
 import { useI18n } from "./i18n-provider";
 import styles from "./header.module.css";
@@ -24,9 +25,10 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       .then((user) => {
         const profile = user as UserProfile;
         setName(`${profile.firstName} ${profile.lastName}`.trim());
+        setLang(getLang());
       })
       .catch(() => undefined);
-  }, []);
+  }, [setLang]);
 
   function logout() {
     logoutSession();
@@ -45,7 +47,13 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           ☰
         </button>
         <Link href="/pages/home" className={styles.logo}>
-          <img src="/shopizer-logo.svg" alt="Shopizer" height={48} />
+          <Image
+            src="/shopizer-logo.svg"
+            alt="Shopizer"
+            width={140}
+            height={48}
+            unoptimized
+          />
         </Link>
       </div>
       <div className={styles.actions}>

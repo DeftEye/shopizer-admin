@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { getLang, setLang as persistLang, syncTokenCookie } from "@/lib/auth/session";
+import { setLang as persistLang, syncTokenCookie } from "@/lib/auth/session";
 import { getMessages, t as translate, type Messages } from "@/lib/i18n";
 
 type I18nContextValue = {
@@ -35,12 +35,8 @@ export function I18nProvider({
 
   useEffect(() => {
     syncTokenCookie();
-    const stored = getLang();
-    if (stored) {
-      setLangState(stored);
-      document.documentElement.lang = stored;
-    }
-  }, []);
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const messages = useMemo(() => getMessages(lang), [lang]);
 

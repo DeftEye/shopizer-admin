@@ -22,7 +22,8 @@ export function PagesShell({ children }: { children: React.ReactNode }) {
       router.replace("/auth");
       return;
     }
-    setReady(true);
+    const id = window.setTimeout(() => setReady(true), 0);
+    return () => window.clearTimeout(id);
   }, [router]);
 
   useEffect(() => {
