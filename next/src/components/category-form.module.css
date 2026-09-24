@@ -1,0 +1,160 @@
+.page {
+  max-width: 80rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.cardTitle {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #edf1f7;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.required {
+  color: #ff3d71;
+}
+
+.input,
+.select,
+.textarea {
+  border-radius: 0.17rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  padding: 0.6875rem 1rem;
+  width: 100%;
+  background-color: #f7f9fc;
+  border: 1px solid #e4e9f2;
+  color: var(--fg);
+  font-family: inherit;
+}
+
+.textarea {
+  min-height: 12rem;
+  resize: vertical;
+  font-weight: 400;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+}
+
+.error {
+  color: #ff3d71;
+  font-size: 12px;
+  margin: 0;
+}
+
+.banner {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.bannerError {
+  color: #ff0648;
+}
+
+.bannerSuccess {
+  color: #00d68f;
+}
+
+.primary,
+.cancel {
+  border-radius: 0.17rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
+}
+
+.primary {
+  background: #36f;
+  border-color: #36f;
+  color: #fff;
+}
+
+.cancel {
+  background: #fff;
+  border-color: #e4e9f2;
+  color: var(--fg);
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+}
