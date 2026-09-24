@@ -1,0 +1,150 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { ApiError, client, clearSession, REQUEST_TIMEOUT_MS } from "./client";
+
+const API_URL = "http://localhost:8080/api";
+const SHIPPING_URL = "http://localhost:9090/shipping/api/v1";
+
+function mockFetch(response: Partial<Response> & { jsonBody?: unknown } = {}) {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: response.ok ?? true,
+    status: response.status ?? 200,
+    statusText: response.statusText ?? "OK",
+    text: async () =>
+      response.jsonBody === undefined
+        ? ""
+        : JSON.stringify(response.jsonBody),
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+describe("api client", () => {
+  beforeEach(() => {
+    process.env.SHOPIZER_API_URL = API_URL;
+    process.env.SHOPIZER_SHIPPING_API_URL = SHIPPING_URL;
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    localStorage.clear();
+    process.env.SHOPIZER_API_URL = API_URL;
+    process.env.SHOPIZER_SHIPPING_API_URL = SHIPPING_URL;
+  });
+
+  it("get('/v1/private/user/profile') hits {SHOPIZER_API_URL}/v1/private/user/profile", async () => {
+    const fetchMock = mockFetch({ jsonBody: { userName: "admin" } });
+
+    await client.get("/v1/private/user/profile");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      `${API_URL}/v1/private/user/profile`,
+    );
+  });
+
+  it("sets the Bearer header when a token is present", async () => {
+    localStorage.setItem("token", "jwt-token");
+    const fetchMock = mockFetch({ jsonBody: {} });
+
+    await client.get("/v1/private/user/profile");
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    const headers = new Headers(init.headers);
+    expect(headers.get("Authorization")).toBe("Bearer jwt-token");
+  });
+
+  it("clears the token on HTTP 401", async () => {
+    localStorage.setItem("token", "expired");
+    localStorage.setItem("userId", "1");
+    localStorage.setItem("roles", "{}");
+    localStorage.setItem("merchant", "DEFAULT");
+    mockFetch({ ok: false, status: 401, statusText: "Unauthorized" });
+
+    await expect(client.get("/v1/private/user/profile")).rejects.toBeInstanceOf(
+      ApiError,
+    );
+
+    expect(localStorage.getItem("token")).toBeNull();
+    expect(localStorage.getItem("userId")).toBeNull();
+    expect(localStorage.getItem("roles")).toBeNull();
+    expect(localStorage.getItem("merchant")).toBeNull();
+  });
+
+  it("uses SHOPIZER_SHIPPING_API_URL for shipping methods", async () => {
+    const fetchMock = mockFetch({ jsonBody: [] });
+
+    await client.getShipping("/private/rules");
+    await client.postShipping("/private/criterias", { name: "weight" });
+    await client.putShipping("/private/actions/1", { id: 1 });
+    await client.deleteShipping("/private/rules/1");
+
+    expect(fetchMock.mock.calls.map((call) => call[0])).toEqual([
+      `${SHIPPING_URL}/private/rules`,
+      `${SHIPPING_URL}/private/criterias`,
+      `${SHIPPING_URL}/private/actions/1`,
+      `${SHIPPING_URL}/private/rules/1`,
+    ]);
+    expect(
+      (fetchMock.mock.calls[1][1] as RequestInit).method,
+    ).toBe("POST");
+    expect((fetchMock.mock.calls[2][1] as RequestInit).method).toBe("PUT");
+    expect((fetchMock.mock.calls[3][1] as RequestInit).method).toBe("DELETE");
+  });
+
+  it("clearSession removes Angular session keys", () => {
+    localStorage.setItem("token", "jwt");
+    localStorage.setItem("userId", "9");
+    clearSession();
+    expect(localStorage.getItem("token")).toBeNull();
+    expect(localStorage.getItem("userId")).toBeNull();
+  });
+
+  it("getBaseUrl matches the Shopizer request base, including the /api rewrite", async () => {
+    const fetchMock = mockFetch({ jsonBody: {} });
+
+    expect(client.getBaseUrl()).toBe(API_URL);
+    await client.get("/v1/private/user/profile");
+    expect(String(fetchMock.mock.calls[0][0])).toBe(
+      `${client.getBaseUrl()}/v1/private/user/profile`,
+    );
+
+    delete process.env.SHOPIZER_API_URL;
+    expect(client.getBaseUrl()).toBe("/api");
+    await client.get("/v1/private/user/profile");
+    expect(String(fetchMock.mock.calls[1][0])).toBe(
+      "/api/v1/private/user/profile",
+    );
+  });
+
+  it("aborts fetch after the request timeout", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn((_url: string, init: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        const signal = init.signal;
+        if (!signal) {
+          reject(new Error("missing AbortSignal"));
+          return;
+        }
+        signal.addEventListener("abort", () => {
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+        });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const pending = client.get("/v1/private/user/profile");
+    const rejected = expect(pending).rejects.toMatchObject({
+      name: "AbortError",
+    });
+    expect(fetchMock.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+    await rejected;
+  });
+});

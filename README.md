@@ -32,3 +32,7 @@ docker run \
 Username: admin@shopizer.com
 
 Password: password
+
+## Next.js (in progress)
+
+A sibling App Router app lives in `next/`. Root CircleCI and the nginx Docker image still build **Angular only**. See `next/README.md`.

@@ -4,3 +4,5 @@ node_modules
 Dockerfile
 README.md
 LICENSE
+# Next.js sibling app — Angular nginx image stays unchanged until cutover
+next
