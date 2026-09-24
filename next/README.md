@@ -21,6 +21,8 @@ Open http://localhost:3000 — `/` goes to `/pages/home` when a JWT is in `local
 
 Slice 1: login / logout / forgot / register / reset, role-filtered sidebar, home store card. JWT stays in `localStorage` (plus a readable `token` cookie so middleware can gate `/pages`). Not httpOnly. Default login `admin@shopizer.com` / `password` against a running Shopizer.
 
+Slice 2: `/pages/user-management/profile`, `change-password` (any signed-in user), `create-user`, `users`, `user/:id` (SUPERADMIN | ADMIN | ADMIN_RETAIL). Same `/v1/private/user(s)` contract as Angular. No store-management screens.
+
 Browser calls same-origin `/api/*`, which Next rewrites to `SHOPIZER_API_URL` (including the `/api` suffix). Shipping rules use `/shipping-api/*` → `SHOPIZER_SHIPPING_API_URL`. Do not strip `/v1`.
 
 ```bash
