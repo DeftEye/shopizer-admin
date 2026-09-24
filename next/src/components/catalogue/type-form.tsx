@@ -38,6 +38,7 @@ export function TypeForm({ typeId }: { typeId?: string }) {
   const [error, setError] = useState("");
   const [touched, setTouched] = useState(false);
   const codeCheckSeq = useRef(0);
+  const saveInFlight = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +110,10 @@ export function TypeForm({ typeId }: { typeId?: string }) {
 
   async function checkUniqueCode(next: string) {
     const trimmed = next.trim();
+    if (existingId || isReadonlyCode) {
+      setIsCodeExist(false);
+      return;
+    }
     const seq = ++codeCheckSeq.current;
     if (!trimmed) {
       setIsCodeExist(false);
@@ -129,6 +134,9 @@ export function TypeForm({ typeId }: { typeId?: string }) {
   }
 
   async function save() {
+    if (saveInFlight.current) {
+      return;
+    }
     setTouched(true);
     setError("");
     setMessage("");
@@ -142,20 +150,7 @@ export function TypeForm({ typeId }: { typeId?: string }) {
       setError(t("COMMON.FILL_REQUIRED_FIELDS"));
       return;
     }
-    if (!existingId) {
-      try {
-        const res = await checkTypeCode(code.trim());
-        if (res.exists) {
-          setIsCodeExist(true);
-          setError(t("COMMON.CODE_EXISTS"));
-          return;
-        }
-        setIsCodeExist(false);
-      } catch {
-        setError(t("COMMON.INTERNAL_SERVER_ERROR"));
-        return;
-      }
-    }
+    saveInFlight.current = true;
     setSaving(true);
     const body: Record<string, unknown> = {
       allowAddToCart,
@@ -167,6 +162,15 @@ export function TypeForm({ typeId }: { typeId?: string }) {
       body.code = code;
     }
     try {
+      if (!existingId) {
+        const res = await checkTypeCode(code.trim());
+        if (res.exists) {
+          setIsCodeExist(true);
+          setError(t("COMMON.CODE_EXISTS"));
+          return;
+        }
+        setIsCodeExist(false);
+      }
       if (existingId) {
         await updateType(existingId, body);
         setMessage(t("PRODUCT_TYPE.PRODUCT_TYPE_UPDATED"));
@@ -178,6 +182,7 @@ export function TypeForm({ typeId }: { typeId?: string }) {
     } catch {
       setError(t("COMMON.INTERNAL_SERVER_ERROR"));
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
     }
   }

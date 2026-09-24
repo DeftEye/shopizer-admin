@@ -43,6 +43,7 @@ export function BrandForm({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const codeCheckSeq = useRef(0);
+  const saveInFlight = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,6 +137,9 @@ export function BrandForm({
   }
 
   async function save() {
+    if (saveInFlight.current) {
+      return;
+    }
     setTouched({ code: true, name: true, url: true });
     setError("");
     setMessage("");
@@ -148,18 +152,7 @@ export function BrandForm({
       setError(t("COMMON.FILL_REQUIRED_FIELDS"));
       return;
     }
-    try {
-      const res = await checkBrandCode(code);
-      const unique = !(res.exists && brand.code !== code);
-      setIsCodeUnique(unique);
-      if (!unique) {
-        setError(t("COMMON.CODE_EXISTS"));
-        return;
-      }
-    } catch {
-      setError(t("COMMON.INTERNAL_SERVER_ERROR"));
-      return;
-    }
+    saveInFlight.current = true;
     setSaving(true);
     const body = {
       code,
@@ -168,6 +161,13 @@ export function BrandForm({
       descriptions: filled,
     };
     try {
+      const res = await checkBrandCode(code);
+      const unique = !(res.exists && brand.code !== code);
+      setIsCodeUnique(unique);
+      if (!unique) {
+        setError(t("COMMON.CODE_EXISTS"));
+        return;
+      }
       if (brand.id) {
         await updateBrand(brand.id, body);
         setMessage(t("BRAND.BRAND_UPDATED"));
@@ -179,6 +179,7 @@ export function BrandForm({
     } catch {
       setError(t("COMMON.INTERNAL_SERVER_ERROR"));
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
     }
   }

@@ -183,4 +183,51 @@ describe("brand form", () => {
     });
     expect(screen.queryByText("Store created.")).toBeNull();
   });
+
+  it("does not fire a second create when Save is clicked twice", async () => {
+    let releaseCreate: ((value: unknown) => void) | undefined;
+    const createGate = new Promise((resolve) => {
+      releaseCreate = resolve;
+    });
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const path = String(url);
+      if (path.includes("/v1/store/languages")) {
+        return jsonResponse([{ code: "en" }, { code: "fr" }]);
+      }
+      if (path.includes("/v1/private/manufacturer/unique")) {
+        return jsonResponse({ exists: false });
+      }
+      if (path.includes("/v1/private/manufacturer") && init?.method === "POST") {
+        await createGate;
+        return jsonResponse({});
+      }
+      return jsonResponse({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderForm();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Code")).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByLabelText("Code"), { target: { value: "nike" } });
+    fireEvent.change(screen.getByLabelText("Order"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Nike" } });
+
+    const save = screen.getByRole("button", { name: "Save" });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    releaseCreate?.({});
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith("/pages/catalogue/brands/brands-list");
+    });
+    expect(
+      fetchMock.mock.calls.filter(
+        (call) =>
+          String(call[0]).endsWith("/v1/private/manufacturer") &&
+          (call[1] as RequestInit).method === "POST",
+      ),
+    ).toHaveLength(1);
+  });
 });

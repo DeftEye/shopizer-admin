@@ -121,4 +121,105 @@ describe("type form", () => {
     });
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("does not show a code collision when editing an existing type", async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const path = String(url);
+      if (path.includes("/v1/store/languages")) {
+        return jsonResponse([{ code: "en" }, { code: "fr" }]);
+      }
+      if (path.includes("/v1/private/products/type/unique")) {
+        return jsonResponse({ exists: true });
+      }
+      if (path.includes("/v1/private/products/type/4") && init?.method === "PUT") {
+        return jsonResponse({});
+      }
+      if (path.includes("/v1/private/products/type/4")) {
+        return jsonResponse({
+          id: 4,
+          code: "general",
+          allowAddToCart: true,
+          visible: true,
+          descriptions: [{ language: "en", name: "General" }],
+        });
+      }
+      return jsonResponse({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <I18nProvider defaultLang="en" langs={["en", "fr"]}>
+        <TypeForm typeId="4" />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => {
+      expect((screen.getByLabelText("Code *") as HTMLInputElement).value).toBe(
+        "general",
+      );
+    });
+
+    fireEvent.blur(screen.getByLabelText("Code *"));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Product type updated")).toBeTruthy();
+    });
+    expect(screen.queryByText("This code already exists.")).toBeNull();
+    expect(
+      fetchMock.mock.calls.some((call) =>
+        String(call[0]).includes("/v1/private/products/type/unique"),
+      ),
+    ).toBe(false);
+  });
+
+  it("does not fire a second create when Save is clicked twice", async () => {
+    let releaseCreate: ((value: unknown) => void) | undefined;
+    const createGate = new Promise((resolve) => {
+      releaseCreate = resolve;
+    });
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const path = String(url);
+      if (path.includes("/v1/store/languages")) {
+        return jsonResponse([{ code: "en" }, { code: "fr" }]);
+      }
+      if (path.includes("/v1/private/products/type/unique")) {
+        return jsonResponse({ exists: false });
+      }
+      if (path.includes("/v1/private/products/type") && init?.method === "POST") {
+        await createGate;
+        return jsonResponse({});
+      }
+      return jsonResponse({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderForm();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Code *")).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByLabelText("Code *"), {
+      target: { value: "general" },
+    });
+    fireEvent.change(screen.getByLabelText("Name*"), {
+      target: { value: "General" },
+    });
+
+    const save = screen.getByRole("button", { name: "Save" });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    releaseCreate?.({});
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith("/pages/catalogue/types/types-list");
+    });
+    expect(
+      fetchMock.mock.calls.filter(
+        (call) =>
+          String(call[0]).includes("/v1/private/products/type") &&
+          (call[1] as RequestInit).method === "POST",
+      ),
+    ).toHaveLength(1);
+  });
 });
