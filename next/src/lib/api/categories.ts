@@ -6,7 +6,7 @@ import type {
   StoreLanguage,
   StoreName,
   UniqueCodeResponse,
-} from "@/lib/catalogue/types";
+} from "@/lib/categories/types";
 
 export type CategoryListParams = {
   store: string;

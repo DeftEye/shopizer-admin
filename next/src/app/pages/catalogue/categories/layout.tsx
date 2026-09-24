@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { canEnterCategoryRoutes } from "@/lib/catalogue/access";
+import { canEnterCategoryRoutes } from "@/lib/categories/access";
 import { getRoles } from "@/lib/auth/session";
 import { readEnv } from "@/lib/env";
 

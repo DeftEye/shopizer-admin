@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { CategoryForm } from "@/components/category-form";
 import { useI18n } from "@/components/i18n-provider";
 import { getCategoryById, readApiErrorMessage } from "@/lib/api/categories";
-import type { CategoryDetail } from "@/lib/catalogue/types";
+import type { CategoryDetail } from "@/lib/categories/types";
 
 export default function CategoryDetailPage() {
   const params = useParams<{ id: string }>();

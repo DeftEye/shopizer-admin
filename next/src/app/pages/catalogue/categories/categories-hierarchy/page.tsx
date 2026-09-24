@@ -13,8 +13,8 @@ import { getLang, getMerchant } from "@/lib/auth/session";
 import {
   decorateHierarchy,
   moveCategoryNode,
-} from "@/lib/catalogue/category-form";
-import type { CategoryNode } from "@/lib/catalogue/types";
+} from "@/lib/categories/category-form";
+import type { CategoryNode } from "@/lib/categories/types";
 
 function TreeBranch({
   nodes,

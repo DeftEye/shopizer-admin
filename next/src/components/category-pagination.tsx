@@ -1,5 +1,5 @@
 import { useI18n } from "@/components/i18n-provider";
-import { visiblePages } from "@/lib/catalogue/pagination";
+import { visiblePages } from "@/lib/categories/pagination";
 
 import styles from "./category-page.module.css";
 

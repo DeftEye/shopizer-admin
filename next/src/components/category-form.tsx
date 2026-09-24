@@ -26,15 +26,15 @@ import {
   formFromCategory,
   invalidCategoryControls,
   parentOptions,
-} from "@/lib/catalogue/category-form";
-import { CATEGORY_PARENT_COUNT } from "@/lib/catalogue/constants";
-import { slugify } from "@/lib/catalogue/slugify";
+} from "@/lib/categories/category-form";
+import { CATEGORY_PARENT_COUNT } from "@/lib/categories/constants";
+import { slugify } from "@/lib/categories/slugify";
 import type {
   CategoryDescription,
   CategoryDetail,
   CategoryFormState,
   CategoryNode,
-} from "@/lib/catalogue/types";
+} from "@/lib/categories/types";
 
 import styles from "./category-form.module.css";
 

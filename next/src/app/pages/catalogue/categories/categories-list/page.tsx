@@ -13,9 +13,9 @@ import {
   updateCategoryVisibility,
 } from "@/lib/api/categories";
 import { getLang, getMerchant } from "@/lib/auth/session";
-import { flattenCategoryTree } from "@/lib/catalogue/category-form";
-import { CATEGORIES_PER_PAGE } from "@/lib/catalogue/constants";
-import type { CategoryNode } from "@/lib/catalogue/types";
+import { flattenCategoryTree } from "@/lib/categories/category-form";
+import { CATEGORIES_PER_PAGE } from "@/lib/categories/constants";
+import type { CategoryNode } from "@/lib/categories/types";
 
 type ListParams = {
   store: string;
