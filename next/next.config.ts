@@ -6,6 +6,7 @@ const shopizerApiOrigin =
 const shippingApiOrigin =
   process.env.SHOPIZER_SHIPPING_API_URL ??
   "http://localhost:9090/shipping/api/v1";
+const shopizerHost = shopizerApiOrigin.replace(/\/api\/?$/, "");
 
 const nextConfig: NextConfig = {
   trailingSlash: false,
@@ -18,6 +19,10 @@ const nextConfig: NextConfig = {
       {
         source: "/shipping-api/:path*",
         destination: `${shippingApiOrigin}/:path*`,
+      },
+      {
+        source: "/actuator/:path*",
+        destination: `${shopizerHost}/actuator/:path*`,
       },
     ];
   },

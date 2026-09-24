@@ -1,0 +1,17 @@
+.body {
+  text-align: center;
+}
+
+.status {
+  margin: 0;
+  font-size: 3rem;
+}
+
+.title {
+  margin: 0.5rem 0;
+}
+
+.message {
+  color: #8f9bb3;
+  margin: 0 0 1.5rem;
+}

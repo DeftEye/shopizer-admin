@@ -17,7 +17,9 @@ npm i
 npm run dev
 ```
 
-Open http://localhost:3000 — `/` redirects to `/auth` (login lands in slice 1).
+Open http://localhost:3000 — `/` goes to `/pages/home` when a JWT is in `localStorage.token`, otherwise `/auth`.
+
+Slice 1: login / logout / forgot / register / reset, role-filtered sidebar, home store card. JWT stays in `localStorage` (plus a readable `token` cookie so middleware can gate `/pages`). Not httpOnly. Default login `admin@shopizer.com` / `password` against a running Shopizer.
 
 Browser calls same-origin `/api/*`, which Next rewrites to `SHOPIZER_API_URL` (including the `/api` suffix). Shipping rules use `/shipping-api/*` → `SHOPIZER_SHIPPING_API_URL`. Do not strip `/v1`.
 

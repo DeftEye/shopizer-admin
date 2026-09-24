@@ -54,6 +54,16 @@ export type Country = {
   zones: unknown[];
 };
 
+export type Zone = {
+  id?: number;
+  code: string;
+  name: string;
+};
+
+export type StoreUniqueResponse = {
+  exists: boolean;
+};
+
 export type RoleFlags = {
   canAccessToOrder: boolean;
   isSuperadmin: boolean;
