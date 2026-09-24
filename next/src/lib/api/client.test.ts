@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, client, clearSession } from "./client";
+import { ApiError, client, clearSession, REQUEST_TIMEOUT_MS } from "./client";
 
 const API_URL = "http://localhost:8080/api";
 const SHIPPING_URL = "http://localhost:9090/shipping/api/v1";
@@ -27,9 +27,12 @@ describe("api client", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
     localStorage.clear();
+    process.env.SHOPIZER_API_URL = API_URL;
+    process.env.SHOPIZER_SHIPPING_API_URL = SHIPPING_URL;
   });
 
   it("get('/v1/private/user/profile') hits {SHOPIZER_API_URL}/v1/private/user/profile", async () => {
@@ -98,5 +101,50 @@ describe("api client", () => {
     clearSession();
     expect(localStorage.getItem("token")).toBeNull();
     expect(localStorage.getItem("userId")).toBeNull();
+  });
+
+  it("getBaseUrl matches the Shopizer request base, including the /api rewrite", async () => {
+    const fetchMock = mockFetch({ jsonBody: {} });
+
+    expect(client.getBaseUrl()).toBe(API_URL);
+    await client.get("/v1/private/user/profile");
+    expect(String(fetchMock.mock.calls[0][0])).toBe(
+      `${client.getBaseUrl()}/v1/private/user/profile`,
+    );
+
+    delete process.env.SHOPIZER_API_URL;
+    expect(client.getBaseUrl()).toBe("/api");
+    await client.get("/v1/private/user/profile");
+    expect(String(fetchMock.mock.calls[1][0])).toBe(
+      "/api/v1/private/user/profile",
+    );
+  });
+
+  it("aborts fetch after the request timeout", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn((_url: string, init: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        const signal = init.signal;
+        if (!signal) {
+          reject(new Error("missing AbortSignal"));
+          return;
+        }
+        signal.addEventListener("abort", () => {
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+        });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const pending = client.get("/v1/private/user/profile");
+    const rejected = expect(pending).rejects.toMatchObject({
+      name: "AbortError",
+    });
+    expect(fetchMock.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+    await rejected;
   });
 });

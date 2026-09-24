@@ -1,6 +1,6 @@
-import { readEnv } from "../env";
-
 export const SESSION_KEYS = ["token", "userId", "roles", "merchant"] as const;
+
+export const REQUEST_TIMEOUT_MS = 30_000;
 
 export type QueryParams = Record<
   string,
@@ -119,29 +119,37 @@ async function request(
   init: { method: string; headers?: HeadersInit; body?: unknown },
 ): Promise<unknown> {
   const serialized = serializeBody(init.body);
-  const response = await fetch(url, {
-    method: init.method,
-    headers: buildHeaders(init.headers, serialized.jsonBody),
-    body: serialized.payload,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  if (response.status === 401) {
-    clearSession();
-  }
+  try {
+    const response = await fetch(url, {
+      method: init.method,
+      headers: buildHeaders(init.headers, serialized.jsonBody),
+      body: serialized.payload,
+      signal: controller.signal,
+    });
 
-  const body = await parseBody(response);
-  if (!response.ok) {
-    throw new ApiError(
-      response.status,
-      `Request failed: ${response.status} ${response.statusText}`,
-      body,
-    );
+    if (response.status === 401) {
+      clearSession();
+    }
+
+    const body = await parseBody(response);
+    if (!response.ok) {
+      throw new ApiError(
+        response.status,
+        `Request failed: ${response.status} ${response.statusText}`,
+        body,
+      );
+    }
+    return body;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return body;
 }
 
 export function getBaseUrl(): string {
-  return process.env.SHOPIZER_API_URL || readEnv().shopizerApiUrl;
+  return shopizerBaseUrl();
 }
 
 export function get(path: string, params?: QueryParams): Promise<unknown> {
