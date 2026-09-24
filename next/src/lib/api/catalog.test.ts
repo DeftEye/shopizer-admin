@@ -23,6 +23,7 @@ import {
   checkTypeCode,
   createType,
   deleteType,
+  fillEmptyTypeDescriptions,
   getListOfTypes,
   getType,
   updateType,
@@ -167,6 +168,27 @@ describe("fillEmptyBrandDescriptions", () => {
       friendlyUrl: "nike",
       description: "shoes",
     });
+  });
+
+  it("copies the first type name into empty locales", () => {
+    expect(
+      fillEmptyTypeDescriptions([
+        { language: "en", name: "General" },
+        { language: "fr", name: "  " },
+      ]),
+    ).toEqual([
+      { language: "en", name: "General" },
+      { language: "fr", name: "General" },
+    ]);
+  });
+
+  it("returns null when every type name is empty", () => {
+    expect(
+      fillEmptyTypeDescriptions([
+        { language: "en", name: "" },
+        { language: "fr", name: "   " },
+      ]),
+    ).toBeNull();
   });
 
   it("returns null when name or friendlyUrl is missing", () => {

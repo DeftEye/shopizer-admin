@@ -3,6 +3,7 @@ import { getLang, getMerchant } from "@/lib/auth/session";
 import { client } from "./client";
 import type {
   ProductType,
+  ProductTypeDescription,
   ProductTypeListResponse,
   UniqueCodeResponse,
 } from "./types";
@@ -59,4 +60,19 @@ export function checkTypeCode(code: string): Promise<UniqueCodeResponse> {
   return client.get(`/v1/private/products/type/unique?code=${code}`, {
     ...storeLangParams(),
   }) as Promise<UniqueCodeResponse>;
+}
+
+/** Copy the first filled name into empty locales — same idea as brand descriptions. */
+export function fillEmptyTypeDescriptions(
+  descriptions: ProductTypeDescription[],
+): ProductTypeDescription[] | null {
+  const name =
+    descriptions.find((item) => item.name.trim())?.name.trim() ?? "";
+  if (!name) {
+    return null;
+  }
+  return descriptions.map((item) => ({
+    language: item.language,
+    name: item.name.trim() || name,
+  }));
 }

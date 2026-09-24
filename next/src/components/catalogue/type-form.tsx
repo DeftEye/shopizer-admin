@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CatalogueGate } from "@/components/catalogue-gate";
 import { useI18n } from "@/components/i18n-provider";
@@ -9,6 +9,7 @@ import { getStoreLanguages } from "@/lib/api/catalog";
 import {
   checkTypeCode,
   createType,
+  fillEmptyTypeDescriptions,
   getType,
   updateType,
 } from "@/lib/api/product-types";
@@ -36,6 +37,7 @@ export function TypeForm({ typeId }: { typeId?: string }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [touched, setTouched] = useState(false);
+  const codeCheckSeq = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,18 +98,32 @@ export function TypeForm({ typeId }: { typeId?: string }) {
   );
   const current = currentIndex >= 0 ? descriptions[currentIndex] : null;
 
-  async function onCodeChange(next: string) {
-    const trimmed = next.trim();
+  function onCodeInput(next: string) {
     setCode(next);
     setIsValidCode(true);
+    if (!next.trim()) {
+      codeCheckSeq.current += 1;
+      setIsCodeExist(false);
+    }
+  }
+
+  async function checkUniqueCode(next: string) {
+    const trimmed = next.trim();
+    const seq = ++codeCheckSeq.current;
     if (!trimmed) {
       setIsCodeExist(false);
       return;
     }
     try {
       const res = await checkTypeCode(trimmed);
+      if (seq !== codeCheckSeq.current) {
+        return;
+      }
       setIsCodeExist(!!res.exists);
     } catch {
+      if (seq !== codeCheckSeq.current) {
+        return;
+      }
       setIsCodeExist(false);
     }
   }
@@ -118,19 +134,34 @@ export function TypeForm({ typeId }: { typeId?: string }) {
     setMessage("");
     const validCode = !!code && ALPHANUMERIC_PATTERN.test(code);
     setIsValidCode(validCode);
-    if (!validCode || descriptions.some((item) => !item.name)) {
+    const filled = fillEmptyTypeDescriptions(descriptions);
+    if (!validCode) {
       return;
     }
-    if (isCodeExist && !existingId) {
-      setError(t("COMMON.CODE_EXISTS"));
+    if (!filled) {
+      setError(t("COMMON.FILL_REQUIRED_FIELDS"));
       return;
+    }
+    if (!existingId) {
+      try {
+        const res = await checkTypeCode(code.trim());
+        if (res.exists) {
+          setIsCodeExist(true);
+          setError(t("COMMON.CODE_EXISTS"));
+          return;
+        }
+        setIsCodeExist(false);
+      } catch {
+        setError(t("COMMON.INTERNAL_SERVER_ERROR"));
+        return;
+      }
     }
     setSaving(true);
     const body: Record<string, unknown> = {
       allowAddToCart,
       visible,
       selectedLanguage,
-      descriptions,
+      descriptions: filled,
     };
     if (!existingId) {
       body.code = code;
@@ -219,7 +250,10 @@ export function TypeForm({ typeId }: { typeId?: string }) {
                   required
                   onChange={(event) => {
                     setTouched(true);
-                    void onCodeChange(event.target.value);
+                    onCodeInput(event.target.value);
+                  }}
+                  onBlur={(event) => {
+                    void checkUniqueCode(event.target.value);
                   }}
                 />
                 {touched && !code ? (

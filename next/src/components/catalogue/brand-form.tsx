@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CatalogueGate } from "@/components/catalogue-gate";
 import { useI18n } from "@/components/i18n-provider";
@@ -42,6 +42,7 @@ export function BrandForm({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const codeCheckSeq = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,16 +107,30 @@ export function BrandForm({
     patchDescription(index, { name, friendlyUrl: slugify(name) });
   }
 
-  async function onCodeChange(next: string) {
+  function onCodeInput(next: string) {
     setCode(next);
+    if (!next) {
+      codeCheckSeq.current += 1;
+      setIsCodeUnique(true);
+    }
+  }
+
+  async function checkUniqueCode(next: string) {
+    const seq = ++codeCheckSeq.current;
     if (!next) {
       setIsCodeUnique(true);
       return;
     }
     try {
       const res = await checkBrandCode(next);
+      if (seq !== codeCheckSeq.current) {
+        return;
+      }
       setIsCodeUnique(!(res.exists && brand.code !== next));
     } catch {
+      if (seq !== codeCheckSeq.current) {
+        return;
+      }
       setIsCodeUnique(true);
     }
   }
@@ -133,8 +148,16 @@ export function BrandForm({
       setError(t("COMMON.FILL_REQUIRED_FIELDS"));
       return;
     }
-    if (!isCodeUnique) {
-      setError(t("COMMON.CODE_EXISTS"));
+    try {
+      const res = await checkBrandCode(code);
+      const unique = !(res.exists && brand.code !== code);
+      setIsCodeUnique(unique);
+      if (!unique) {
+        setError(t("COMMON.CODE_EXISTS"));
+        return;
+      }
+    } catch {
+      setError(t("COMMON.INTERNAL_SERVER_ERROR"));
       return;
     }
     setSaving(true);
@@ -213,7 +236,10 @@ export function BrandForm({
                       ...currentTouched,
                       code: true,
                     }));
-                    void onCodeChange(event.target.value);
+                    onCodeInput(event.target.value);
+                  }}
+                  onBlur={(event) => {
+                    void checkUniqueCode(event.target.value);
                   }}
                 />
                 {touched.code && !code ? (

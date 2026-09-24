@@ -76,9 +76,9 @@ describe("brand form", () => {
       expect(screen.getByLabelText("Code")).toBeTruthy();
     });
 
-    fireEvent.change(screen.getByLabelText("Code"), {
-      target: { value: "nike" },
-    });
+    const codeInput = screen.getByLabelText("Code");
+    fireEvent.change(codeInput, { target: { value: "nike" } });
+    fireEvent.blur(codeInput);
     fireEvent.change(screen.getByLabelText("Order"), {
       target: { value: "1" },
     });
@@ -118,9 +118,9 @@ describe("brand form", () => {
       expect(screen.getByLabelText("Code")).toBeTruthy();
     });
 
-    fireEvent.change(screen.getByLabelText("Code"), {
-      target: { value: "nike" },
-    });
+    const codeInput = screen.getByLabelText("Code");
+    fireEvent.change(codeInput, { target: { value: "nike" } });
+    fireEvent.blur(codeInput);
     fireEvent.change(screen.getByLabelText("Order"), {
       target: { value: "1" },
     });
@@ -138,5 +138,49 @@ describe("brand form", () => {
       expect(screen.getAllByText("This code already exists.").length).toBeGreaterThan(0);
     });
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it("ignores a stale unique-code response from an earlier prefix", async () => {
+    let releaseSlow: ((value: unknown) => void) | undefined;
+    const slow = new Promise((resolve) => {
+      releaseSlow = resolve;
+    });
+    const fetchMock = vi.fn(async (url: string) => {
+      const path = String(url);
+      if (path.includes("/v1/store/languages")) {
+        return jsonResponse([{ code: "en" }, { code: "fr" }]);
+      }
+      if (path.includes("/v1/private/manufacturer/unique")) {
+        const code = new URL(path, "http://local").searchParams.get("code");
+        if (code === "ni") {
+          await slow;
+          return jsonResponse({ exists: false });
+        }
+        return jsonResponse({ exists: true });
+      }
+      return jsonResponse({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderForm();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Code")).toBeTruthy();
+    });
+
+    const codeInput = screen.getByLabelText("Code");
+    fireEvent.change(codeInput, { target: { value: "ni" } });
+    fireEvent.blur(codeInput);
+    fireEvent.change(codeInput, { target: { value: "nike" } });
+    fireEvent.blur(codeInput);
+
+    await waitFor(() => {
+      expect(screen.getByText("This code already exists.")).toBeTruthy();
+    });
+
+    releaseSlow?.({});
+    await waitFor(() => {
+      expect(screen.getByText("This code already exists.")).toBeTruthy();
+    });
+    expect(screen.queryByText("Store created.")).toBeNull();
   });
 });
