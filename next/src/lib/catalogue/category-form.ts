@@ -258,21 +258,19 @@ function takeNode(
   nodes: CategoryNode[],
   id: number,
 ): { node: CategoryNode | null; rest: CategoryNode[] } {
-  let found: CategoryNode | null = null;
-  const filter = (list: CategoryNode[]): CategoryNode[] =>
-    list
-      .filter((item) => {
-        if (item.id === id) {
-          found = item;
-          return false;
-        }
-        return true;
-      })
-      .map((item) => ({
-        ...item,
-        children: item.children ? filter(item.children) : [],
-      }));
-  return { node: found, rest: filter(nodes) };
+  let extracted: CategoryNode | null = null;
+  const rest = nodes.flatMap((item) => {
+    if (item.id === id) {
+      extracted = item;
+      return [];
+    }
+    const nested = takeNode(item.children ?? [], id);
+    if (nested.node) {
+      extracted = nested.node;
+    }
+    return [{ ...item, children: nested.rest }];
+  });
+  return { node: extracted, rest };
 }
 
 function insertChild(

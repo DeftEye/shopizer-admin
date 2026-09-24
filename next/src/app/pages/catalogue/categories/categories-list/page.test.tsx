@@ -93,7 +93,7 @@ describe("categories list", () => {
     renderList();
 
     await waitFor(() => {
-      expect(screen.getByText("rootcat")).toBeTruthy();
+      expect(screen.getByText("Root cat")).toBeTruthy();
       expect(screen.getByText("Child")).toBeTruthy();
     });
 
@@ -112,7 +112,7 @@ describe("categories list", () => {
   it("patches visibility and deletes through the Angular v1 paths", async () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     renderList();
-    await waitFor(() => expect(screen.getByText("rootcat")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Root cat")).toBeTruthy());
 
     fireEvent.click(screen.getByLabelText("Visible rootcat"));
     await waitFor(() => {
