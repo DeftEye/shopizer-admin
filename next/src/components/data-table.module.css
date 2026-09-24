@@ -1,0 +1,54 @@
+.wrap {
+  overflow-x: auto;
+  background: var(--card);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #edf1f7;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  color: #8f9bb3;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.filter {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #e4e9f2;
+  border-radius: 0.17rem;
+  background: #f7f9fc;
+  font: inherit;
+}
+
+.actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.actions button {
+  border: 0;
+  background: transparent;
+  color: #3366ff;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.2rem 0.4rem;
+}
+
+.actions button[data-danger="true"] {
+  color: #ff3d71;
+}
