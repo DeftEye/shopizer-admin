@@ -84,12 +84,6 @@ describe("create option set", () => {
     fireEvent.change(await screen.findByLabelText(/Option name/), {
       target: { value: "1" },
     });
-    fireEvent.change(screen.getByLabelText("Option value"), {
-      target: {
-        value: "2",
-        selectedOptions: [{ value: "2" }, { value: "3" }],
-      },
-    });
     const values = screen.getByLabelText("Option value") as HTMLSelectElement;
     Array.from(values.options).forEach((option) => {
       option.selected = option.value === "2" || option.value === "3";

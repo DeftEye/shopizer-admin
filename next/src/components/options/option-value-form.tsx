@@ -298,7 +298,8 @@ export function OptionValueForm({ optionValueId }: { optionValueId?: string }) {
           <span className={styles.label}>{t("DESCRIPTION_FORM.IMAGE")}</span>
           {imageUrl ? (
             <div className={styles.imagePreview}>
-              {/* Existing Shopizer image URL or local object preview */}
+              {/* Shopizer image URLs are remote and user-picked; next/image is not used. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={imageUrl} alt="" />
               <button
                 type="button"
