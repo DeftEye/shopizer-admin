@@ -142,3 +142,13 @@ export function IsOrderManagementVisible(flags: RoleFlags): boolean {
     flags.isAdmin
   );
 }
+
+/** Brand / type / group menu child guards. */
+export function canManageCatalogueItems(flags: RoleFlags): boolean {
+  return (
+    IsSuperadmin(flags) ||
+    IsAdmin(flags) ||
+    IsAdminRetail(flags) ||
+    IsAdminCatalogue(flags)
+  );
+}

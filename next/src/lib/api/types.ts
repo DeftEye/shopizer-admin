@@ -75,3 +75,73 @@ export type RoleFlags = {
   isCustomer: boolean;
   isAdminRetail: boolean;
 };
+
+export type UniqueCodeResponse = {
+  exists: boolean;
+};
+
+export type BrandDescription = {
+  language: string;
+  name: string;
+  highlights: string;
+  friendlyUrl: string;
+  description: string;
+  title: string;
+  keyWords: string;
+  metaDescription: string;
+};
+
+export type Brand = {
+  id?: number;
+  code: string;
+  order?: number | string;
+  descriptions?: BrandDescription[];
+  description?: { name?: string };
+};
+
+export type BrandListResponse = {
+  recordsTotal: number;
+  manufacturers: Brand[];
+};
+
+export type ProductTypeDescription = {
+  language: string;
+  name: string;
+};
+
+export type ProductType = {
+  id?: number | string;
+  code: string;
+  store?: string;
+  allowAddToCart?: boolean;
+  visible?: boolean | string;
+  description?: ProductTypeDescription;
+  descriptions?: ProductTypeDescription[];
+};
+
+export type ProductTypeListResponse = {
+  recordsTotal: number;
+  list: ProductType[];
+};
+
+export type ProductGroup = {
+  code: string;
+  active: boolean;
+};
+
+export type CatalogProduct = {
+  id: number;
+  description?: { name?: string };
+};
+
+export type CatalogProductListResponse = {
+  products: CatalogProduct[];
+};
+
+export type StoreName = {
+  code: string;
+};
+
+export type StoreListResponse = {
+  data: StoreName[];
+};
