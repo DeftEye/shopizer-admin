@@ -2,6 +2,9 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
+# Next.js lives in next/ (Node >= 20). This workflow still builds Angular only
+# (Node 12 + ng build --prod). Do not point this job at next/ until cutover.
+#
 
 
 version: 2.1

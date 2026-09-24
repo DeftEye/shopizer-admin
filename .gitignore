@@ -6,6 +6,12 @@
 # dependencies
 /node_modules
 
+# Next.js sibling app (built/installed separately; Node >= 20)
+/next/node_modules
+/next/.next
+/next/coverage
+/next/out
+
 # IDEs and editors
 /.idea
 .project

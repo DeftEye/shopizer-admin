@@ -1,0 +1,31 @@
+:root {
+  --canvas: #edf1f7;
+  --sidebar: #222b45;
+  --fg: #222b45;
+  --muted: #8f9bb3;
+  --card: #ffffff;
+  --primary: #ff7f39;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--canvas);
+  color: var(--fg);
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body {
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
