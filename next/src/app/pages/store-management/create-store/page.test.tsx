@@ -99,6 +99,9 @@ describe("create store", () => {
       expect(document.getElementById("store-name")).toBeTruthy();
     });
 
+    const retailer = document.getElementById("store-is-retailer") as HTMLInputElement;
+    expect(retailer.checked).toBe(false);
+
     const set = (id: string, value: string) => {
       fireEvent.change(document.getElementById(id) as HTMLElement, {
         target: { value },
@@ -132,6 +135,8 @@ describe("create store", () => {
       );
       expect(unique).toBeTruthy();
       expect(create).toBeTruthy();
+      const body = JSON.parse(String((create?.[1] as RequestInit).body));
+      expect(body.retailer).toBe(false);
       expect(push).toHaveBeenCalledWith("/pages/store-management/stores-list");
     });
   });

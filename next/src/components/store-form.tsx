@@ -210,6 +210,8 @@ export function StoreForm({
             await loadProvinces(store.address.country, store.address.stateProvince);
           }
         } else if (parent) {
+          // Angular `adjustForm`: reuse languages, currency, measures, and
+          // country/state. Do not copy `retailer` — create starts unchecked.
           setForm((current) => ({
             ...current,
             supportedLanguages: (parent.supportedLanguages ?? []).map((lang) => lang.code),
@@ -221,7 +223,6 @@ export function StoreForm({
             dimension: parent.dimension ?? current.dimension,
             country: parent.address?.country ?? current.country,
             stateProvince: parent.address?.stateProvince ?? current.stateProvince,
-            retailer: !!parent.retailer,
           }));
           if (parent.address?.country) {
             await loadProvinces(parent.address.country, parent.address.stateProvince);
@@ -751,6 +752,7 @@ export function StoreForm({
         <div className={styles.field}>
           <label className={styles.checkRow}>
             <input
+              id="store-is-retailer"
               type="checkbox"
               checked={form.retailer}
               disabled={retailerLocked}
