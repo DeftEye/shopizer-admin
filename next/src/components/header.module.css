@@ -1,0 +1,89 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 4.75rem;
+  padding: 0 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toggle {
+  border: 0;
+  background: transparent;
+  color: #8f9bb3;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  padding-left: 1.25rem;
+  border-left: 1px solid #edf1f7;
+}
+
+.logo img {
+  height: 48px;
+  width: auto;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.action {
+  border: 0;
+  background: transparent;
+  color: #222b45;
+  font: inherit;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin: 0.25rem 0 0;
+  padding: 0.4rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e4e9f2;
+  border-radius: 0.25rem;
+  min-width: 10rem;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.menu button,
+.menu a {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+  color: #222b45;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menu button:hover,
+.menu a:hover {
+  background: #edf1f7;
+}
